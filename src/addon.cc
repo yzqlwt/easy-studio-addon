@@ -1,8 +1,11 @@
 #include <napi.h>
 
+#include "AppConfig.h"
+#include "Package.h"
 #include "utils/Tools.h"
 #include "http/httplib.h"
 #include "utils/PlistParser.h"
+#include "utils/DirHelper.h"
 
 Napi::Value Add(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
@@ -49,6 +52,10 @@ Napi::Value Read(const Napi::CallbackInfo& info) {
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
   exports.Set(Napi::String::New(env, "add"), Napi::Function::New(env, Add));
   exports.Set(Napi::String::New(env, "readFile"), Napi::Function::New(env, Read));
+  exports.Set(Napi::String::New(env, "setCCSPath"), Napi::Function::New(env, AppConfig::setCCSPath));
+  exports.Set(Napi::String::New(env, "setSkinPath"), Napi::Function::New(env, AppConfig::setSkinPath));
+  exports.Set(Napi::String::New(env, "getSkinFullPath"), Napi::Function::New(env, DirHelper::getSkinFullPath));
+  exports.Set(Napi::String::New(env, "handleImages"), Napi::Function::New(env, Package::handleImages));
   return exports;
 }
 

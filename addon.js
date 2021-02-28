@@ -1,6 +1,9 @@
 var addon = require('bindings')('addon.node')
 
-console.log('This should be eight:', addon.add(3, 5))
-console.log('Log:', addon.readFile("C:/Users/yzqlwt/Desktop/hotfix.md", (content) => { 
-    console.log(content, "--")
-}))
+addon.setSkinPath("res/ui/games/game275/skin01")
+
+addon.setCCSPath("C:\\Users\\yzqlwt\\Downloads\\mangomath-ui-yzq\\CocosProject.ccs")
+
+console.log(addon.getSkinFullPath())
+
+console.log(addon.handleImages())
