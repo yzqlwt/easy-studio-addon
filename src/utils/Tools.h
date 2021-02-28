@@ -15,6 +15,7 @@ public:
     static QString ReadFile(QString path);
     static void WriteFile(const QString& path, const QString& content);
     static QString GetPlistName(const std::vector<QString>& files, const QString& md5);
+    static QString Download(const QString& uri, const QString& path);
 };
 
 

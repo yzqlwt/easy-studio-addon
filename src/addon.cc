@@ -55,7 +55,7 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
   exports.Set(Napi::String::New(env, "setCCSPath"), Napi::Function::New(env, AppConfig::setCCSPath));
   exports.Set(Napi::String::New(env, "setSkinPath"), Napi::Function::New(env, AppConfig::setSkinPath));
   exports.Set(Napi::String::New(env, "getSkinFullPath"), Napi::Function::New(env, DirHelper::getSkinFullPath));
-  exports.Set(Napi::String::New(env, "handleImages"), Napi::Function::New(env, Package::handleImages));
+  exports.Set(Napi::String::New(env, "package"), Napi::Function::New(env, PackageHelper::package));
   return exports;
 }
 

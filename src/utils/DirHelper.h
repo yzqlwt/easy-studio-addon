@@ -13,7 +13,17 @@ public:
 
 	static QString GetCachePath() {
 		auto userPath = GetUserPath();
-		auto path = QString("%1/%2/%3").arg(userPath, "EasyStudio");
+		auto path = QString("%1/%2").arg(userPath, "EasyStudio");
+		QDir dir(path);
+		if (!dir.exists()) {
+			dir.mkpath(path);
+		}
+		return path;
+	}
+	
+	static QString GetImagesCachePath() {
+		auto cachePath = GetCachePath();
+		auto path = QString("%1 %2").arg(cachePath, "tiny");
 		QDir dir(path);
 		if (!dir.exists()) {
 			dir.mkpath(path);
