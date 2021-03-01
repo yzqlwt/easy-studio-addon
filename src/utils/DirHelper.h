@@ -23,7 +23,7 @@ public:
 	
 	static QString GetImagesCachePath() {
 		auto cachePath = GetCachePath();
-		auto path = QString("%1 %2").arg(cachePath, "tiny");
+		auto path = QString("%1/%2").arg(cachePath, "tiny");
 		QDir dir(path);
 		if (!dir.exists()) {
 			dir.mkpath(path);

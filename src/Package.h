@@ -58,6 +58,11 @@ public:
 			{ Napi::String::New(*mEnv, "error"), Napi::String::New(*mEnv, content.toStdString().c_str()) });
 	}
 
+	static void EmitTiny(const QString& content) {
+		mFunc->Call(
+			{ Napi::String::New(*mEnv, "tiny"), Napi::String::New(*mEnv, content.toStdString().c_str()) });
+	}
+
 	static void Package() {
 		HandleImages();
 	}
@@ -74,28 +79,44 @@ public:
 				needTinyFiles.push_back(file);
 			}
 		}
-		for (auto file : needTinyFiles) {
+		EmitWarn(DirHelper::GetImagesCachePath()+"GetImagesCachePath");
+		auto size = needTinyFiles.size();
+		nlohmann::json json;
+		for (auto i = 0; i < size; i++)
+		{
+			auto file = needTinyFiles[i];
 			QFileInfo info(file);
 			auto name = info.fileName();
-			EmitSteps(QString("—πÀı:") + name);
+			json["status"] = "process";
+			json["title"] = QString("Compress:%1/%2").arg(i+1).arg(size).toStdString();
+			json["description"] = name.toStdString();
+			EmitTiny(json.dump().c_str());
+			Tiny(file);
 		}
+		json["status"] = "finish";
+		json["title"] = QString("Compress: %1").arg(size).toStdString();
+		EmitTiny(json.dump().c_str());
 		return files.join("\n");
 	}
 
 	static QString Tiny(const QString& path) {
 		httplib::Client cli("https://api.tinify.com");
 		auto index = rand() % Keys.size();
-		auto token = QString("Basic ") + (QString("api") + Keys[index]).toUtf8().toBase64() ;
+		auto token = QString("Basic ") +((QString("api:")+Keys[index])).toUtf8().toBase64() ;
+		
 		cli.set_default_headers({
 										{"User-Agent", "Chrome/86.0.4240.198 Safari/537.36"},
 										{"Authorization", token.toStdString()}
 			});
 		QFileInfo fileInfo(path);
 		if (fileInfo.isFile()) {
-			QFile file(path);
 			auto md5 = Tools::GetMd5(path);
-			file.open(QIODevice::ReadOnly);
-			auto content = QString(file.readAll()).toStdString();
+			EmitWarn(path);
+			std::ifstream ifs(path.toStdString(), std::ios::in | std::ios::binary);
+			std::stringstream ss;
+			ss << ifs.rdbuf();
+			ifs.close();
+			std::string content(ss.str());
 			auto res = cli.Post("/shrink", content, "image/png");
 			if (nlohmann::json::accept(res->body)) {
 				auto json = nlohmann::json::parse(res->body);
@@ -108,10 +129,12 @@ public:
 					std::cout << "tiny png" << json.dump() << std::endl;
 					auto url = json["output"]["url"].get<std::string>();
 					//œ¬‘ÿ
-					Tools::Download(url.c_str(), QString("%1/%2%3").arg(DirHelper::GetImagesCachePath(), md5, ".png"));
+					EmitWarn(QString("%1/%2%3").arg(DirHelper::GetImagesCachePath(), md5, ".png"));
+					return Tools::Download(url.c_str(), QString("%1/%2%3").arg(DirHelper::GetImagesCachePath(), md5, ".png"));
 				}
 			}
 		}
+		return "";
 	}
 
 	static Napi::Value handleImages(const Napi::CallbackInfo& info) {
