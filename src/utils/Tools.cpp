@@ -40,7 +40,10 @@ QString Tools::ReadFile(QString path) {
 	if (fileInfo.isFile()) {
 		QFile file(path);
 		file.open(QIODevice::ReadOnly | QIODevice::Text);
-		return QString(file.readAll());
+		QByteArray fileMsg = file.readAll();
+		QByteArray md5 = QCryptographicHash::hash(fileMsg, QCryptographicHash::Md5).toHex();
+		file.close();
+		return md5;
 	}
     return "";
 }

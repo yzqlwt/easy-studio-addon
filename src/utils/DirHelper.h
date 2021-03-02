@@ -13,11 +13,22 @@ public:
 
 	static QString GetCachePath() {
 		auto userPath = GetUserPath();
-		auto path = QString("%1/%2").arg(userPath, "EasyStudio");
+		auto path = QString("%1/%2/%3/%4").arg(userPath, "AppData", "Local","EasyStudio");
 		QDir dir(path);
 		if (!dir.exists()) {
 			dir.mkpath(path);
 		}
+		return path;
+	}
+
+	static QString GetTempDir() {
+		auto cachePath = GetCachePath();
+		auto path = QString("%1/%2").arg(cachePath, "temp");
+		QDir dir(path);
+		if (dir.exists()) {
+			dir.removeRecursively();
+		}
+		dir.mkpath(path);
 		return path;
 	}
 	

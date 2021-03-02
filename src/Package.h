@@ -79,7 +79,6 @@ public:
 				needTinyFiles.push_back(file);
 			}
 		}
-		EmitWarn(DirHelper::GetImagesCachePath()+"GetImagesCachePath");
 		auto size = needTinyFiles.size();
 		nlohmann::json json;
 		for (auto i = 0; i < size; i++)
@@ -94,8 +93,15 @@ public:
 			Tiny(file);
 		}
 		json["status"] = "finish";
-		json["title"] = QString("Compress: %1").arg(size).toStdString();
+		json["title"] = QString("Compress: success").toStdString();
 		EmitTiny(json.dump().c_str());
+		auto tempPath = DirHelper::GetTempDir();
+		for (auto item : maps) {
+			auto md5 = item.first;
+			auto file = item.second;
+			QFile::copy(QString("%1/%2.png").arg(DirHelper::GetImagesCachePath(), md5), QString("%1/%2.png").arg(tempPath, md5));
+		}
+
 		return files.join("\n");
 	}
 
@@ -111,7 +117,6 @@ public:
 		QFileInfo fileInfo(path);
 		if (fileInfo.isFile()) {
 			auto md5 = Tools::GetMd5(path);
-			EmitWarn(path);
 			std::ifstream ifs(path.toStdString(), std::ios::in | std::ios::binary);
 			std::stringstream ss;
 			ss << ifs.rdbuf();
@@ -122,19 +127,25 @@ public:
 				auto json = nlohmann::json::parse(res->body);
 				if (res->body.find("error") != std::string::npos) {
 					//tiny png error retry!
-					EmitWarn("tiny png error");
+					//qDebug() << "—πÀı¥ÌŒÛ£∫" << res->body;
 					return Tiny(path);
 				}
 				else {
-					std::cout << "tiny png" << json.dump() << std::endl;
 					auto url = json["output"]["url"].get<std::string>();
 					//œ¬‘ÿ
-					EmitWarn(QString("%1/%2%3").arg(DirHelper::GetImagesCachePath(), md5, ".png"));
 					return Tools::Download(url.c_str(), QString("%1/%2%3").arg(DirHelper::GetImagesCachePath(), md5, ".png"));
 				}
 			}
 		}
 		return "";
+	}
+
+	void TexturePackage(const QString& res_path, const QString& targetPath) {
+		char str[2048];
+		auto appPath = QDir::currentPath();
+		auto path = QString("%1/%2/%3").arg(appPath, "TexturePacker", "TexturePacker.exe");
+		auto cmdStr = QString("%1 %2 --sheet %3/__frame_{n1}.png --data %3/__frame_{n1}.plist --allow-free-size --no-trim --max-size 2048 --format cocos2d --multipack --extrude 4").arg(path, res_path, targetPath);
+		system(str);
 	}
 
 	static Napi::Value handleImages(const Napi::CallbackInfo& info) {

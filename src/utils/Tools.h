@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <QtCore/QString>
+#include <QtCore/QDebug>
 
 
 class Tools {
