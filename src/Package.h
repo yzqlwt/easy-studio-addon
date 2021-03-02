@@ -67,16 +67,16 @@ public:
 		HandleImages();
 	}
 
-	static QString HandleImages() {
+	static void HandleImages() {
 		auto maps = std::map<QString, QString>();
-		auto files = DirHelper::GetFilesRecursive(DirHelper::GetSkinFullPath(), ".png");
+		auto filesInfo = DirHelper::GetFilesRecursive(DirHelper::GetSkinFullPath(), ".png");
 		auto needTinyFiles = QStringList();
-		for (auto file : files) {
-			auto md5 = Tools::GetMd5(file);
-			maps[md5] = file;
+		for (auto info : filesInfo) {
+			auto md5 = Tools::GetMd5(info.absolutePath());
+			maps[md5] = info.absolutePath();
 			QFileInfo info(QString("%1/%2%3").arg(DirHelper::GetImagesCachePath(), md5, ".png"));
 			if (!info.isFile()) {
-				needTinyFiles.push_back(file);
+				needTinyFiles.push_back(info.absolutePath());
 			}
 		}
 		auto size = needTinyFiles.size();
@@ -101,8 +101,6 @@ public:
 			auto file = item.second;
 			QFile::copy(QString("%1/%2.png").arg(DirHelper::GetImagesCachePath(), md5), QString("%1/%2.png").arg(tempPath, md5));
 		}
-
-		return files.join("\n");
 	}
 
 	static QString Tiny(const QString& path) {
@@ -150,7 +148,7 @@ public:
 
 	static Napi::Value handleImages(const Napi::CallbackInfo& info) {
 		Napi::Env env = info.Env();
-		auto files = PackageHelper::HandleImages();
-		return Napi::String::New(env, files.toStdString().c_str());
+		PackageHelper::HandleImages();
+		return env.Null();
 	}
 };

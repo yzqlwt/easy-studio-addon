@@ -3,7 +3,7 @@
         {
             "target_name": "addon",
             "cflags!": ["-fno-exceptions"],
-            "cflags_cc!": ["-fno-exceptions", "-std=c++20" ],
+            "cflags_cc!": ["-fno-exceptions", "-std=c++17" ],
             "sources": [
                 "src/addon.cc",
                 "src/AppConfig.h",

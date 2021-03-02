@@ -11,13 +11,11 @@
 #include <sstream>
 #include <locale>
 #include <codecvt>
-#include <filesystem>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/lexical_cast.hpp>
 #include <regex>
 #include <opencv2/opencv.hpp>
-#include <boost/filesystem.hpp>
 namespace pt = boost::property_tree;
 
 class Frame{
@@ -111,13 +109,13 @@ public:
     }
     void save( const std::string& dirPath){
          cv::Mat origin = cv::imread(this->_imagePath, cv::IMREAD_UNCHANGED);
-         auto parentDir = std::filesystem::path(dirPath);
-         for (auto frame : this->_frames){
-            auto region = frame.convertToMat(origin);
-            auto path = parentDir / frame.key;
-            std::cout << path << std::endl;
-            cv::imwrite(path.string(), region);
-         }
+         //auto parentDir = std::filesystem::path(dirPath);
+         //for (auto frame : this->_frames){
+         //   auto region = frame.convertToMat(origin);
+         //   auto path = parentDir / frame.key;
+         //   std::cout << path << std::endl;
+         //   cv::imwrite(path.string(), region);
+         //}
     }
 };
 

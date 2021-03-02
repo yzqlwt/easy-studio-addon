@@ -2,7 +2,6 @@
 
 #include "../AppConfig.h"
 #include <napi.h>
-#include <filesystem>
 #include <QtCore/qdir.h>
 #include <QtCore/qstring.h>
 class DirHelper {
@@ -73,16 +72,34 @@ public:
 		return path;
 	}
 
-	static QStringList GetFilesRecursive(const QString& path, const QString& extension = ".*") {
-		QStringList list;
-		for (auto& fe : std::filesystem::recursive_directory_iterator(path.toStdString()))
+	//static QStringList GetFilesRecursive(const QString& path, const QString& extension = ".*") {
+	//	QStringList list;
+	//	for (auto& fe : std::filesystem::recursive_directory_iterator(path.toStdString()))
+	//	{
+	//		auto filePath = fe.path();
+	//		if (std::filesystem::is_regular_file(filePath) && extension == ".*" || filePath.extension() == extension.toStdString())
+	//			list.push_back(QString(filePath.string().c_str()));
+	//	}
+
+	//	return list;
+	//}
+
+	static QFileInfoList GetFilesRecursive(const QString& path, const QString& extension = ".*")
+	{
+		QDir dir(path);
+		QStringList filter;
+		filter << extension;
+		dir.setNameFilters(filter);
+		QFileInfoList file_list = dir.entryInfoList(QDir::Files | QDir::Hidden | QDir::NoSymLinks);
+		QFileInfoList folder_list = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+		for (int i = 0; i != folder_list.size(); i++)
 		{
-			auto filePath = fe.path();
-			if (std::filesystem::is_regular_file(filePath) && extension == ".*" || filePath.extension() == extension.toStdString())
-				list.push_back(QString(filePath.string().c_str()));
+			QString name = folder_list.at(i).absoluteFilePath();
+			QFileInfoList child_file_list = GetFilesRecursive(name, extension);
+			file_list.append(child_file_list);
 		}
 
-		return list;
+		return file_list;
 	}
 
 	static Napi::Value getSkinFullPath(const Napi::CallbackInfo& info) {
