@@ -20,6 +20,9 @@
 #include <QtCore/QDebug>
 #include <QtCore/QTextStream>
 #include <QtCore/QCryptographicHash>
+#include <QtWidgets/QApplication>
+#include <QtGui/QClipboard>
+#include <QtCore/QMimeData>
 
 size_t write_data(void* ptr, size_t size, size_t nmemb, FILE* stream) {
     size_t written = fwrite(ptr, size, nmemb, stream);
@@ -77,6 +80,28 @@ void Tools::WriteFile(const QString &path, const QString &content) {
     } catch (std::exception e) {
         std::cout << e.what() << std::endl;
     }
+}
+
+QString Tools::GetClipboardData() {
+    QStringList list;
+	if (OpenClipboard(NULL)) // open clipboard
+	{
+		HDROP hDrop = HDROP(::GetClipboardData(CF_HDROP)); // get the file path hwnd of clipboard
+		if (hDrop != NULL)
+		{
+			char szFilePathName[MAX_PATH + 1] = { 0 };
+			UINT nNumOfFiles = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0); // get the count of files
+			for (UINT nIndex = 0; nIndex < nNumOfFiles; ++nIndex)
+			{
+				memset(szFilePathName, 0, MAX_PATH + 1);
+				DragQueryFile(hDrop, nIndex, szFilePathName, MAX_PATH); // get file name
+                list.push_back(szFilePathName);
+			}
+		}
+		CloseClipboard(); // close clipboard	
+	}
+	//}
+    return list.join(",");
 }
 
 QString Tools::Download(const QString& uri, const QString& path) {

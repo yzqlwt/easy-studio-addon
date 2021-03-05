@@ -6,24 +6,27 @@ addon.setCCSPath("C:\\Users\\yzqlwt\\Documents\\WorkSpace\\cocos-ui-back\\mangom
 
 
 
-const EventEmitter = require('events').EventEmitter
+// const EventEmitter = require('events').EventEmitter
 
-const emitter = new EventEmitter()
+// const emitter = new EventEmitter()
 
-emitter.on('error', () => {
-    console.log('### START ...')
-})
-emitter.on('tiny', (evt) => {
-    console.log(evt);
-})
+// emitter.on('error', () => {
+//     console.log('### START ...')
+// })
+// emitter.on('tiny', (evt) => {
+//     console.log(evt);
+// })
 
-emitter.on('warn', (data) => {
-    console.log(data)
-})
+// emitter.on('warn', (data) => {
+//     console.log(data)
+// })
 
-addon.package(emitter.emit.bind(emitter))
+// addon.package(emitter.emit.bind(emitter))
 
 
-console.log(addon.getSkinFullPath())
-
+// console.log(addon.getSkinFullPath())
+// console.log(addon.getFolder("C:\\Users\\yzqlwt\\Documents"))
 // console.log(addon.handleImages())
+setInterval(() => {
+    console.log(addon.getClipData())
+}, 3000)

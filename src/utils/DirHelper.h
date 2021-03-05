@@ -4,6 +4,7 @@
 #include <napi.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qstring.h>
+#include <QtCore/QDebug>
 class DirHelper {
 public:
 	static QString GetUserPath() {
@@ -72,17 +73,11 @@ public:
 		return path;
 	}
 
-	//static QStringList GetFilesRecursive(const QString& path, const QString& extension = ".*") {
-	//	QStringList list;
-	//	for (auto& fe : std::filesystem::recursive_directory_iterator(path.toStdString()))
-	//	{
-	//		auto filePath = fe.path();
-	//		if (std::filesystem::is_regular_file(filePath) && extension == ".*" || filePath.extension() == extension.toStdString())
-	//			list.push_back(QString(filePath.string().c_str()));
-	//	}
-
-	//	return list;
-	//}
+	static QString GetFolder(const QString& path) {
+		QDir dir(path);
+		auto  list = dir.entryList(QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+		return list.join(",");
+	}
 
 	static QFileInfoList GetFilesRecursive(const QString& path, const QString& extension = ".*")
 	{
@@ -112,6 +107,12 @@ public:
 		Napi::Env env = info.Env();
 		auto path = DirHelper::GetAssetsFullPath();
 		return Napi::String::New(env, path.toStdString().c_str());
+	}
+
+	static Napi::Value getFolder(const Napi::CallbackInfo& info) {
+		Napi::Env env = info.Env();
+		auto list = DirHelper::GetFolder(info[0].As<Napi::String>().ToString().Utf8Value().c_str());
+		return Napi::String::New(env, list.toStdString().c_str());
 	}
 	
 };

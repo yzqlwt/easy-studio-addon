@@ -7,26 +7,6 @@
 #include "utils/PlistParser.h"
 #include "utils/DirHelper.h"
 
-Napi::Value Add(const Napi::CallbackInfo& info) {
-  Napi::Env env = info.Env();
-
-  if (info.Length() < 2) {
-    Napi::TypeError::New(env, "Wrong number of arguments")
-        .ThrowAsJavaScriptException();
-    return env.Null();
-  }
-
-  if (!info[0].IsNumber() || !info[1].IsNumber()) {
-    Napi::TypeError::New(env, "Wrong arguments").ThrowAsJavaScriptException();
-    return env.Null();
-  }
-
-  double arg0 = info[0].As<Napi::Number>().DoubleValue();
-  double arg1 = info[1].As<Napi::Number>().DoubleValue();
-  Napi::Number num = Napi::Number::New(env, arg0 + arg1);
-
-  return num;
-}
 
 Napi::Value Read(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
@@ -49,12 +29,22 @@ Napi::Value Read(const Napi::CallbackInfo& info) {
 	return Napi::String::New(env, content.toStdString().c_str());
 }
 
+
+
+static Napi::Value getClipData(const Napi::CallbackInfo& info) {
+	Napi::Env env = info.Env();
+	auto path = Tools::GetClipboardData();
+	return Napi::String::New(env, path.toStdString().c_str());
+}
+
+
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
-  exports.Set(Napi::String::New(env, "add"), Napi::Function::New(env, Add));
   exports.Set(Napi::String::New(env, "readFile"), Napi::Function::New(env, Read));
+  exports.Set(Napi::String::New(env, "getClipData"), Napi::Function::New(env, getClipData));
   exports.Set(Napi::String::New(env, "setCCSPath"), Napi::Function::New(env, AppConfig::setCCSPath));
   exports.Set(Napi::String::New(env, "setSkinPath"), Napi::Function::New(env, AppConfig::setSkinPath));
   exports.Set(Napi::String::New(env, "getSkinFullPath"), Napi::Function::New(env, DirHelper::getSkinFullPath));
+  exports.Set(Napi::String::New(env, "getFolder"), Napi::Function::New(env, DirHelper::getFolder));
   exports.Set(Napi::String::New(env, "package"), Napi::Function::New(env, PackageHelper::package));
   return exports;
 }
