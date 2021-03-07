@@ -8,42 +8,28 @@
 #include "utils/DirHelper.h"
 
 
-Napi::Value Read(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
-
-	if (info.Length() < 2) {
-		Napi::TypeError::New(env, "Wrong number of arguments")
-			.ThrowAsJavaScriptException();
-		return env.Null();
-	}
-
-	if (!info[0].IsString() || !info[1].IsFunction()) {
-		Napi::TypeError::New(env, "Wrong arguments").ThrowAsJavaScriptException();
-		return env.Null();
-	}
-
-	auto arg0 = info[0].As<Napi::String>().ToString().Utf8Value().c_str();
-	auto content = Tools::ReadFile(arg0);
-	Napi::Function cb = info[1].As<Napi::Function>();
-	cb.Call(env.Global(), { Napi::String::New(env, content.toStdString().c_str()) });
-	return Napi::String::New(env, content.toStdString().c_str());
-}
-
-
 
 static Napi::Value getClipData(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
-	auto path = Tools::GetClipboardData();
+	auto path = Tools::GetClipboardFiles();
 	return Napi::String::New(env, path.toStdString().c_str());
+}
+
+static Napi::Value gotoFolder(const Napi::CallbackInfo& info) {
+	Napi::Env env = info.Env();
+	auto path = info[0].As<Napi::String>().Utf8Value().c_str();
+	Tools::GotoFolder(path);
+	return env.Null();
 }
 
 
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
-  exports.Set(Napi::String::New(env, "readFile"), Napi::Function::New(env, Read));
-  exports.Set(Napi::String::New(env, "getClipData"), Napi::Function::New(env, getClipData));
+  exports.Set(Napi::String::New(env, "getClipboardFiles"), Napi::Function::New(env, getClipData));
+  exports.Set(Napi::String::New(env, "gotoFolder"), Napi::Function::New(env, gotoFolder));
   exports.Set(Napi::String::New(env, "setCCSPath"), Napi::Function::New(env, AppConfig::setCCSPath));
   exports.Set(Napi::String::New(env, "setSkinPath"), Napi::Function::New(env, AppConfig::setSkinPath));
   exports.Set(Napi::String::New(env, "getSkinFullPath"), Napi::Function::New(env, DirHelper::getSkinFullPath));
+  exports.Set(Napi::String::New(env, "getAssetsFullPath"), Napi::Function::New(env, DirHelper::getAssetsFullPath));
   exports.Set(Napi::String::New(env, "getFolder"), Napi::Function::New(env, DirHelper::getFolder));
   exports.Set(Napi::String::New(env, "package"), Napi::Function::New(env, PackageHelper::package));
   return exports;

@@ -109,6 +109,7 @@ public:
 		return Napi::String::New(env, path.toStdString().c_str());
 	}
 
+
 	static Napi::Value getFolder(const Napi::CallbackInfo& info) {
 		Napi::Env env = info.Env();
 		auto list = DirHelper::GetFolder(info[0].As<Napi::String>().ToString().Utf8Value().c_str());

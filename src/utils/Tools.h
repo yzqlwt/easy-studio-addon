@@ -17,7 +17,8 @@ public:
     static void WriteFile(const QString& path, const QString& content);
     static QString GetPlistName(const std::vector<QString>& files, const QString& md5);
     static QString Download(const QString& uri, const QString& path);
-    static QString GetClipboardData();
+    static QString GetClipboardFiles();
+    static void GotoFolder(const QString& path);
 };
 
 

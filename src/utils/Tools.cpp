@@ -2,7 +2,6 @@
 // Created by yzqlwt on 2020/11/28.
 //
 #include "Tools.h"
-#include "../http/httplib.h"
 #include <curl/curl.h>
 #include <iostream>
 #include <sstream>
@@ -12,17 +11,17 @@
 #include <fstream>
 #include <regex>
 #include <tchar.h>
+#include <cstdlib>
 #include <openssl/evp.h>
 #include <openssl/bio.h>
 #include <openssl/buffer.h>
 #include <QtCore/QFileInfo>
 #include <QtCore/QFile>
+#include <QtCore/QDir>
 #include <QtCore/QDebug>
 #include <QtCore/QTextStream>
 #include <QtCore/QCryptographicHash>
-#include <QtWidgets/QApplication>
-#include <QtGui/QClipboard>
-#include <QtCore/QMimeData>
+#include <QtCore/qurl.h>
 
 size_t write_data(void* ptr, size_t size, size_t nmemb, FILE* stream) {
     size_t written = fwrite(ptr, size, nmemb, stream);
@@ -82,7 +81,7 @@ void Tools::WriteFile(const QString &path, const QString &content) {
     }
 }
 
-QString Tools::GetClipboardData() {
+QString Tools::GetClipboardFiles() {
     QStringList list;
 	if (OpenClipboard(NULL)) // open clipboard
 	{
@@ -95,7 +94,7 @@ QString Tools::GetClipboardData() {
 			{
 				memset(szFilePathName, 0, MAX_PATH + 1);
 				DragQueryFile(hDrop, nIndex, szFilePathName, MAX_PATH); // get file name
-                list.push_back(szFilePathName);
+                list.push_back(QString::fromLocal8Bit(szFilePathName));
 			}
 		}
 		CloseClipboard(); // close clipboard	
@@ -151,5 +150,12 @@ QString Tools::Download(const QString& uri, const QString& path) {
     //释放文件资源
     fclose(fp);
     return path;
+}
+
+void Tools::GotoFolder(const QString& path) {
+    QFileInfo info(path);
+    if (info.isDir()) {
+        system(QString("start %1").arg(path).toStdString().c_str());
+    }
 }
 

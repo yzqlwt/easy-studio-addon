@@ -5,7 +5,7 @@ addon.setSkinPath("res/ui/games/game207/skin01")
 addon.setCCSPath("C:\\Users\\yzqlwt\\Documents\\WorkSpace\\cocos-ui-back\\mangomath-ui\\CocosProject.ccs")
 
 
-
+addon.gotoFolder("C:/Users/yzqlwt/Documents/WorkSpace/cocos-ui/mangomath-ui/cocosstudio/res/ui/games/game411/skin01/")
 // const EventEmitter = require('events').EventEmitter
 
 // const emitter = new EventEmitter()
@@ -28,5 +28,5 @@ addon.setCCSPath("C:\\Users\\yzqlwt\\Documents\\WorkSpace\\cocos-ui-back\\mangom
 // console.log(addon.getFolder("C:\\Users\\yzqlwt\\Documents"))
 // console.log(addon.handleImages())
 setInterval(() => {
-    console.log(addon.getClipData())
+    console.log(addon.getClipboardFiles())
 }, 3000)
