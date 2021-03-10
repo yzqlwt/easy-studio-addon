@@ -1,32 +1,32 @@
 var addon = require('bindings')('addon.node')
 
-addon.setSkinPath("res/ui/games/game207/skin01")
+addon.setSkinPath("res/ui/games/game411/skin01")
 
-addon.setCCSPath("C:\\Users\\yzqlwt\\Documents\\WorkSpace\\cocos-ui-back\\mangomath-ui\\CocosProject.ccs")
-
-
-addon.gotoFolder("C:/Users/yzqlwt/Documents/WorkSpace/cocos-ui/mangomath-ui/cocosstudio/res/ui/games/game411/skin01/")
-// const EventEmitter = require('events').EventEmitter
-
-// const emitter = new EventEmitter()
-
-// emitter.on('error', () => {
-//     console.log('### START ...')
-// })
-// emitter.on('tiny', (evt) => {
-//     console.log(evt);
-// })
-
-// emitter.on('warn', (data) => {
-//     console.log(data)
-// })
-
-// addon.package(emitter.emit.bind(emitter))
+addon.setCCSPath("C:/Users/yzqlwt/Documents/WorkSpace/cocos-ui/mangomath-ui/CocosProject.ccs")
 
 
-// console.log(addon.getSkinFullPath())
-// console.log(addon.getFolder("C:\\Users\\yzqlwt\\Documents"))
-// console.log(addon.handleImages())
-setInterval(() => {
-    console.log(addon.getClipboardFiles())
-}, 3000)
+// // addon.gotoFolder("C:/Users/yzqlwt/Documents/WorkSpace/cocos-ui/mangomath-ui/cocosstudio/res/ui/games/game411/skin01/")
+const EventEmitter = require('events').EventEmitter
+
+const emitter = new EventEmitter()
+
+emitter.on('error', () => {
+    console.log('### START ...')
+})
+emitter.on('tiny', (evt) => {
+    console.log(evt);
+})
+
+emitter.on('data', (data) => {
+    console.log(data)
+})
+
+addon.package(emitter.emit.bind(emitter))
+
+
+// // console.log(addon.getSkinFullPath())
+// // console.log(addon.getFolder("C:/Users/yzqlwt/Documents"))
+// // console.log(addon.handleImages())
+// setInterval(() => {
+//     console.log(addon.getClipboardFiles())
+// }, 3000)

@@ -5,6 +5,7 @@
 #include <QtCore/qdir.h>
 #include <QtCore/qstring.h>
 #include <QtCore/QDebug>
+#include <QtCore/QDirIterator>
 class DirHelper {
 public:
 	static QString GetUserPath() {
@@ -42,19 +43,10 @@ public:
 		return path;
 	}
 
-	static QString GetSkinPath() {
-		return AppConfig::SKIN_PATH;
-	}
-
-	static QString GetCCSPath() {
-		return AppConfig::CCS_PATH;
-	}
-
-
 	static QString GetSkinFullPath() {
-		QDir projectPath(AppConfig::CCS_PATH);
+		QDir projectPath(AppConfig::GetInstance().GetCCSPath());
 		projectPath.cdUp();
-		auto path = QString("%1/%2/%3").arg(projectPath.absolutePath(), "cocosstudio", AppConfig::SKIN_PATH);
+		auto path = QString("%1/%2/%3").arg(projectPath.absolutePath(), "cocosstudio", AppConfig::GetInstance().GetSkinPath());
 		QDir dir(path);
 		if (!dir.exists()) {
 			dir.mkpath(path);
@@ -63,9 +55,20 @@ public:
 	}
 
 	static QString GetAssetsFullPath() {
-		QDir projectPath(AppConfig::CCS_PATH);
+		QDir projectPath(AppConfig::GetInstance().GetCCSPath());
 		projectPath.cdUp();
-		auto path = QString("%1/%2/%3").arg(projectPath.absolutePath(), "easystudio", AppConfig::SKIN_PATH);
+		auto path = QString("%1/%2/%3").arg(projectPath.absolutePath(), "easystudio", AppConfig::GetInstance().GetSkinPath());
+		QDir dir(path);
+		if (!dir.exists()) {
+			dir.mkpath(path);
+		}
+		return path;
+	}
+
+	static QString GetOutputFullPath() {
+		QDir projectPath(AppConfig::GetInstance().GetCCSPath());
+		projectPath.cdUp();
+		auto path = QString("%1/%2/%3").arg(projectPath.absolutePath(), "output", AppConfig::GetInstance().GetSkinPath());
 		QDir dir(path);
 		if (!dir.exists()) {
 			dir.mkpath(path);
@@ -79,22 +82,18 @@ public:
 		return list.join(",");
 	}
 
-	static QFileInfoList GetFilesRecursive(const QString& path, const QString& extension = ".*")
+	static QFileInfoList GetFilesRecursive(const QString& path, const QString& extension = "*.*")
 	{
-		QDir dir(path);
-		QStringList filter;
-		filter << extension;
-		dir.setNameFilters(filter);
-		QFileInfoList file_list = dir.entryInfoList(QDir::Files | QDir::Hidden | QDir::NoSymLinks);
-		QFileInfoList folder_list = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
-		for (int i = 0; i != folder_list.size(); i++)
+		QFileInfoList list;
+		QDirIterator iter(path, QStringList() << extension,
+			QDir::Files | QDir::NoSymLinks,
+			QDirIterator::Subdirectories);
+		while (iter.hasNext())
 		{
-			QString name = folder_list.at(i).absoluteFilePath();
-			QFileInfoList child_file_list = GetFilesRecursive(name, extension);
-			file_list.append(child_file_list);
+			iter.next();
+			list.push_back(iter.filePath());
 		}
-
-		return file_list;
+		return list;
 	}
 
 	static Napi::Value getSkinFullPath(const Napi::CallbackInfo& info) {
@@ -114,6 +113,12 @@ public:
 		Napi::Env env = info.Env();
 		auto list = DirHelper::GetFolder(info[0].As<Napi::String>().ToString().Utf8Value().c_str());
 		return Napi::String::New(env, list.toStdString().c_str());
+	}
+
+	static Napi::Value setTexturePackerPath(const Napi::CallbackInfo& info) {
+		Napi::Env env = info.Env();
+		auto list = DirHelper::GetFolder(info[0].As<Napi::String>().ToString().Utf8Value().c_str());
+		return env.Null();
 	}
 	
 };

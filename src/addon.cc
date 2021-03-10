@@ -1,6 +1,5 @@
 #include <napi.h>
 
-#include "AppConfig.h"
 #include "Package.h"
 #include "utils/Tools.h"
 #include "http/httplib.h"
@@ -28,6 +27,7 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
   exports.Set(Napi::String::New(env, "gotoFolder"), Napi::Function::New(env, gotoFolder));
   exports.Set(Napi::String::New(env, "setCCSPath"), Napi::Function::New(env, AppConfig::setCCSPath));
   exports.Set(Napi::String::New(env, "setSkinPath"), Napi::Function::New(env, AppConfig::setSkinPath));
+  exports.Set(Napi::String::New(env, "setTPPath"), Napi::Function::New(env, AppConfig::setTPPath));
   exports.Set(Napi::String::New(env, "getSkinFullPath"), Napi::Function::New(env, DirHelper::getSkinFullPath));
   exports.Set(Napi::String::New(env, "getAssetsFullPath"), Napi::Function::New(env, DirHelper::getAssetsFullPath));
   exports.Set(Napi::String::New(env, "getFolder"), Napi::Function::New(env, DirHelper::getFolder));
