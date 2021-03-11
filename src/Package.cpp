@@ -44,6 +44,14 @@ void PackageHelper::Package() {
 	config["resource"] = resources;
 	Tools::WriteFile(configPath, config.dump().c_str());
 	Compress();
+	nlohmann::json json;
+	json["title"] = "Package";
+	json["status"] = "finish";
+	Emit("package", json.dump().c_str());
+	json["title"] = "Upload";
+	json["status"] = "process";
+	Emit("upload", json.dump().c_str());
+	//ÉÏ´«
 }
 
 void PackageHelper::HandleImages() {
