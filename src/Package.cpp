@@ -4,7 +4,7 @@
 #include "http/httplib.h"
 #include "csd/FlatBuffersSerialize.h"
 #include <iostream>
-#include <QtCore/QCoreApplication>
+#include <QtCore/QDateTime>
 
 
 static std::vector<QString> Keys = {
@@ -34,7 +34,7 @@ void PackageHelper::Package() {
 	resources.clear();
 	auto tempPath = DirHelper::GetTempDir();
 	DirHelper::ClearDir(tempPath);
-	auto outputDir = DirHelper::GetOutputDir();
+	auto outputDir = DirHelper::GetOutputFullPath();
 	DirHelper::ClearDir(outputDir);
 	HandleImages();
 	HandleCSD();
@@ -43,6 +43,7 @@ void PackageHelper::Package() {
 	nlohmann::json config;
 	config["resource"] = resources;
 	Tools::WriteFile(configPath, config.dump().c_str());
+	Compress();
 }
 
 void PackageHelper::HandleImages() {
@@ -97,7 +98,7 @@ void PackageHelper::HandleCSD()
 		}
 		auto newPath = info.absolutePath() + "/" + info.baseName() + ".easy";
 		Tools::WriteFile(newPath, content);
-		auto outputDir = DirHelper::GetOutputDir();
+		auto outputDir = DirHelper::GetOutputFullPath();
 		auto csbPath = outputDir + "/" + info.baseName() + ".csb";
 		FlatBuffersSerialize::getInstance()->serializeFlatBuffersWithXML(content.toStdString(), csbPath.toStdString());
 		resources.push_back(this->GetItemConfig(csbPath));
@@ -106,14 +107,35 @@ void PackageHelper::HandleCSD()
 
 void PackageHelper::HandleAssets()
 {
-	auto outputDir = DirHelper::GetOutputDir();
+	auto outputDir = DirHelper::GetOutputFullPath();
 	auto assetsPath = DirHelper::GetAssetsFullPath();
-	auto filesInfo = DirHelper::GetFilesRecursive(DirHelper::GetSkinFullPath());
+	auto filesInfo = DirHelper::GetFilesRecursive(DirHelper::GetAssetsFullPath());
 	for (auto file : filesInfo) {
 		auto fullPath = file.absoluteFilePath();
 		resources.push_back(this->GetItemConfig(fullPath));
-		QFile::copy(fullPath, QString("%1/%2.png").arg(outputDir, file.fileName()));
+		QFile::copy(fullPath, QString("%1/%2").arg(outputDir, file.fileName()));
 	}
+}
+
+void PackageHelper::Compress()
+{
+	auto historyDir = DirHelper::GetHistoryDir();
+	auto outputDir = DirHelper::GetOutputFullPath();
+	auto skinPath = DirHelper::GetSkinFullPath();
+	auto gameResults = Tools::GetAllMatchResults(skinPath, "(?<=games/)game\\d{2,4}");
+	auto skinResults = Tools::GetAllMatchResults(skinPath, "skin\\d{1,100}");
+	auto gameid = QString();
+	auto skinId = QString();
+	if (gameResults.size() > 0) {
+		gameid = gameResults[0]+"_";
+	}
+	if (skinResults.size() > 0) {
+		skinId = skinResults[0]+ "_";
+	}
+	QDateTime dateTime(QDateTime::currentDateTime());
+	QString time = dateTime.toString("yyyy-MM-dd--hh-mm-ss");
+	auto path = QString("%1/%2%3%4.zip").arg(historyDir, gameid, skinId, time);
+	JlCompress::compressDir(path, outputDir);
 }
 
 
@@ -173,7 +195,7 @@ nlohmann::json PackageHelper::GetItemConfig(const QString& path)
 }
 
 void PackageHelper::TexturePackage() {
-	auto outputDir = DirHelper::GetOutputDir();
+	auto outputDir = DirHelper::GetOutputFullPath();
 	auto tempDir = DirHelper::GetTempDir();
 	auto appPath = AppConfig::GetInstance().GetTPPath();
 	auto cmdStr = QString("%1 %2 --sheet %3/__frame_{n1}.png --data %3/__frame_{n1}.plist --allow-free-size --no-trim --max-size 2048 --format cocos2d --multipack --extrude 2").arg(appPath, tempDir, outputDir);

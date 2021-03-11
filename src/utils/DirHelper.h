@@ -6,6 +6,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/QDebug>
 #include <QtCore/QDirIterator>
+#include <quazip5/JlCompress.h>
 class DirHelper {
 public:
 
@@ -41,19 +42,9 @@ public:
 		return path;
 	}
 
-	//static QString GetPlistDir() {
-	//	auto cachePath = GetCachePath();
-	//	auto path = QString("%1/%2").arg(cachePath, "plist");
-	//	QDir dir(path);
-	//	if (!dir.exists()) {
-	//		dir.mkpath(path);
-	//	}
-	//	return path;
-	//}
-
-	static QString GetOutputDir() {
+	static QString GetHistoryDir() {
 		auto cachePath = GetCachePath();
-		auto path = QString("%1/%2").arg(cachePath, "output");
+		auto path = QString("%1/%2").arg(cachePath, "history");
 		QDir dir(path);
 		if (!dir.exists()) {
 			dir.mkpath(path);

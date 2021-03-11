@@ -54,7 +54,7 @@ QString Tools::ReadFile(QString path) {
 
 
 QString Tools::GetPlistName(const QString &md5) {
-    auto filesInfo = DirHelper::GetFilesRecursive(DirHelper::GetOutputDir(), "*.plist");
+    auto filesInfo = DirHelper::GetFilesRecursive(DirHelper::GetOutputFullPath(), "*.plist");
     for (int i = 0; i < filesInfo.size(); ++i) {
         auto info = filesInfo[i];
         auto content = Tools::ReadFile(info.absoluteFilePath());

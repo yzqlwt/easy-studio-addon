@@ -32,6 +32,7 @@ public:
 	void HandleImages();
 	void HandleCSD();
 	void HandleAssets();
+	void Compress();
 	nlohmann::json GetItemConfig(const QString& path);
 	QString Tiny(const QString& path);
 	void TexturePackage();
