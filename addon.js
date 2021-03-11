@@ -1,6 +1,7 @@
 var addon = require('bindings')('addon.node')
 
 addon.setSkinPath("res/ui/games/game411/skin01")
+addon.setTPPath("C:/Users/yzqlwt/easy-studio-addon/build/Release/assets/TexturePacker.exe")
 
 addon.setCCSPath("C:/Users/yzqlwt/Documents/WorkSpace/cocos-ui/mangomath-ui/CocosProject.ccs")
 

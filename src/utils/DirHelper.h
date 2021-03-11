@@ -8,6 +8,15 @@
 #include <QtCore/QDirIterator>
 class DirHelper {
 public:
+
+	static void ClearDir(const QString& path) {
+		QDir dir(path);
+		if (dir.exists()) {
+			dir.removeRecursively();
+		}
+		dir.mkpath(path);
+	}
+
 	static QString GetUserPath() {
 		return QDir::homePath();
 	}
@@ -26,10 +35,29 @@ public:
 		auto cachePath = GetCachePath();
 		auto path = QString("%1/%2").arg(cachePath, "temp");
 		QDir dir(path);
-		if (dir.exists()) {
-			dir.removeRecursively();
+		if (!dir.exists()) {
+			dir.mkpath(path);
 		}
-		dir.mkpath(path);
+		return path;
+	}
+
+	//static QString GetPlistDir() {
+	//	auto cachePath = GetCachePath();
+	//	auto path = QString("%1/%2").arg(cachePath, "plist");
+	//	QDir dir(path);
+	//	if (!dir.exists()) {
+	//		dir.mkpath(path);
+	//	}
+	//	return path;
+	//}
+
+	static QString GetOutputDir() {
+		auto cachePath = GetCachePath();
+		auto path = QString("%1/%2").arg(cachePath, "output");
+		QDir dir(path);
+		if (!dir.exists()) {
+			dir.mkpath(path);
+		}
 		return path;
 	}
 	
@@ -74,6 +102,13 @@ public:
 			dir.mkpath(path);
 		}
 		return path;
+	}
+
+	static QString GetFileDataPath(const QString& path) {
+		QDir projectPath(AppConfig::GetInstance().GetCCSPath());
+		projectPath.cdUp();
+		auto file = QString("%1/%2/%3").arg(projectPath.absolutePath(), "cocosstudio", path);
+		return file;
 	}
 
 	static QString GetFolder(const QString& path) {

@@ -2,6 +2,7 @@
 // Created by yzqlwt on 2020/11/28.
 //
 #include "Tools.h"
+#include "DirHelper.h"
 #include <curl/curl.h>
 #include <iostream>
 #include <sstream>
@@ -22,6 +23,7 @@
 #include <QtCore/QTextStream>
 #include <QtCore/QCryptographicHash>
 #include <QtCore/qurl.h>
+#include <QtCore/QRegularExpression>
 
 size_t write_data(void* ptr, size_t size, size_t nmemb, FILE* stream) {
     size_t written = fwrite(ptr, size, nmemb, stream);
@@ -30,9 +32,11 @@ size_t write_data(void* ptr, size_t size, size_t nmemb, FILE* stream) {
 
 
 QString Tools::GetMd5(const QString& path){
-    auto content = Tools::ReadFile(path);
-	auto bb = QCryptographicHash::hash(content.toUtf8(), QCryptographicHash::Md5);
-	return QString(bb.toHex());
+	QFile theFile(path);
+	theFile.open(QIODevice::ReadOnly);
+	QByteArray ba = QCryptographicHash::hash(theFile.readAll(), QCryptographicHash::Md5);
+	theFile.close();
+	return ba.toHex().constData();
 }
 
 
@@ -41,44 +45,56 @@ QString Tools::ReadFile(QString path) {
 	if (fileInfo.isFile()) {
 		QFile file(path);
 		file.open(QIODevice::ReadOnly | QIODevice::Text);
-		QByteArray fileMsg = file.readAll();
-		QByteArray md5 = QCryptographicHash::hash(fileMsg, QCryptographicHash::Md5).toHex();
-		file.close();
-		return md5;
+        auto content =  file.readAll();
+        file.close();
+        return content;
 	}
     return "";
 }
 
 
-QString Tools::GetPlistName(const std::vector<QString> &files, const QString &md5) {
-    for (int i = 0; i < files.size(); ++i) {
-        auto file = files[i];
-        auto content = Tools::ReadFile(file);
+QString Tools::GetPlistName(const QString &md5) {
+    auto filesInfo = DirHelper::GetFilesRecursive(DirHelper::GetOutputDir(), "*.plist");
+    for (int i = 0; i < filesInfo.size(); ++i) {
+        auto info = filesInfo[i];
+        auto content = Tools::ReadFile(info.absoluteFilePath());
         if (content.contains(md5))
         {
-            QFileInfo fileInfo(file);
-            return fileInfo.baseName();
+            return info.baseName();
         }
     }
     return QString();
 }
 
 void Tools::WriteFile(const QString &path, const QString &content) {
+    QFile file(path);
     try {
-
-		QFile file(path);
 		//方式：Append为追加，WriteOnly，ReadOnly
 		if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-			QTextStream out(&file);
-			out.flush();
-			file.close();
+            file.write(content.toStdString().c_str());
         }
         else {
             qDebug() << "Write File Error:" << path;
         }
+        
     } catch (std::exception e) {
         std::cout << e.what() << std::endl;
     }
+    file.close();
+}
+
+QStringList Tools::GetAllMatchResults(const QString& content, const QString& regexp)
+{
+    QRegularExpression re(regexp);
+	QRegularExpressionMatchIterator iter = re.globalMatch(content);
+
+    QStringList list;
+	/* 遍历查找匹配。 */
+	while (iter.hasNext()) {
+		QRegularExpressionMatch match = iter.next();
+        list.push_back(match.captured(0));
+	}
+    return list;
 }
 
 QString Tools::GetClipboardFiles() {

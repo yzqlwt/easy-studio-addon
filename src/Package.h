@@ -26,11 +26,15 @@ private:
 	}
 	Napi::Env* _env;
 	Napi::Function* _func;
+	std::vector<nlohmann::json> resources;
 public:
 	void Package();
 	void HandleImages();
+	void HandleCSD();
+	void HandleAssets();
+	nlohmann::json GetItemConfig(const QString& path);
 	QString Tiny(const QString& path);
-	void TexturePackage(const QString& res_path, const QString& targetPath);
+	void TexturePackage();
 	void Emit(const QString& type, const QString& content);
 	void initEnv(Napi::Env* env, Napi::Function* func) {
 		this->_env = env;
