@@ -32,6 +32,16 @@ public:
 		return path;
 	}
 
+	static QString GetTokenPath() {
+		auto cachePath = GetCachePath();
+		auto path = QString("%1/%2").arg(cachePath, "token.json");
+		QFileInfo info(path);
+		if (info.isFile()) {
+			return path;
+		}
+		return nullptr;
+	}
+
 	static QString GetTempDir() {
 		auto cachePath = GetCachePath();
 		auto path = QString("%1/%2").arg(cachePath, "temp");

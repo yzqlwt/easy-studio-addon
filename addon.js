@@ -4,25 +4,33 @@ addon.setSkinPath("res/ui/games/game411/skin01")
 addon.setTPPath("C:/Users/yzqlwt/easy-studio-addon/build/Release/assets/TexturePacker.exe")
 
 addon.setCCSPath("C:/Users/yzqlwt/Documents/WorkSpace/cocos-ui/mangomath-ui/CocosProject.ccs")
-
+addon.setSkinId(1805)
 
 // // addon.gotoFolder("C:/Users/yzqlwt/Documents/WorkSpace/cocos-ui/mangomath-ui/cocosstudio/res/ui/games/game411/skin01/")
 const EventEmitter = require('events').EventEmitter
 
 const emitter = new EventEmitter()
 
-emitter.on('error', () => {
-    console.log('### START ...')
+emitter.on('package', (data) => {
+    console.log('package', data)
 })
 emitter.on('tiny', (evt) => {
-    console.log(evt);
+    console.log('tiny', evt);
 })
 
-emitter.on('data', (data) => {
-    console.log(data)
+emitter.on('upload', (data) => {
+    console.log('upload', data)
 })
 
-addon.package(emitter.emit.bind(emitter))
+addon.tiny()
+console.log("tiny")
+addon.package()
+console.log("package")
+addon.upload()
+console.log("upload")
+
+
+
 
 
 // // console.log(addon.getSkinFullPath())

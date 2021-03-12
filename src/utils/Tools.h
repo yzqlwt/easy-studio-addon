@@ -15,6 +15,7 @@ class Tools {
 public:
     static QString GetMd5(const QString& file);
     static QString ReadFile(QString path);
+    static QString GetToken();
     static void WriteFile(const QString& path, const QString& content);
     static QStringList GetAllMatchResults(const QString& text, const QString& regexp);
     static QString GetPlistName(const QString& md5);

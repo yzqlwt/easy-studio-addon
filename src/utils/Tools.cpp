@@ -25,11 +25,6 @@
 #include <QtCore/qurl.h>
 #include <QtCore/QRegularExpression>
 
-size_t write_data(void* ptr, size_t size, size_t nmemb, FILE* stream) {
-    size_t written = fwrite(ptr, size, nmemb, stream);
-    return written;
-}
-
 
 QString Tools::GetMd5(const QString& path){
 	QFile theFile(path);
@@ -50,6 +45,28 @@ QString Tools::ReadFile(QString path) {
         return content;
 	}
     return "";
+}
+
+QString Tools::GetToken()
+{
+    auto path = DirHelper::GetTokenPath();
+    auto token = QString();
+    if (path!=nullptr)
+    {
+        auto content = Tools::ReadFile(path);
+		nlohmann::json json = nlohmann::json::parse(content.toStdString());
+		auto time = json["expires_in"].get<long long>();
+		auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+			std::chrono::system_clock::now().time_since_epoch()
+			);
+		if (time - ms.count() > 36000) {
+			return json["access_token"].get<std::string>().c_str();
+		}
+		else {
+			std::cout << "token expired" << std::endl;
+		}
+    }
+    return token;
 }
 
 
@@ -119,54 +136,6 @@ QString Tools::GetClipboardFiles() {
     return list.join(",");
 }
 
-QString Tools::Download(const QString& uri, const QString& path) {
-    FILE* fp = fopen(path.toStdString().c_str(), "wb");
-
-    //curl初始化
-    CURL* curl = curl_easy_init();
-    // curl返回值
-    CURLcode res;
-    if (curl)
-    {
-        //设置curl的请求头
-        struct curl_slist* header_list = NULL;
-        header_list = curl_slist_append(header_list, "User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko");
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header_list);
-
-        //不接收响应头数据0代表不接收 1代表接收
-        curl_easy_setopt(curl, CURLOPT_HEADER, 0);
-
-        //设置请求的URL地址
-        curl_easy_setopt(curl, CURLOPT_URL, uri.toStdString().c_str());
-
-        //设置ssl验证
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, false);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, false);
-
-        //CURLOPT_VERBOSE的值为1时，会显示详细的调试信息
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, 0);
-
-        curl_easy_setopt(curl, CURLOPT_READFUNCTION, NULL);
-
-        //设置数据接收函数
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &write_data);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-
-        curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
-
-        //设置超时时间
-        curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 6); // set transport and time out time
-        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 6);
-
-        // 开启请求
-        res = curl_easy_perform(curl);
-    }
-    // 释放curl
-    curl_easy_cleanup(curl);
-    //释放文件资源
-    fclose(fp);
-    return path;
-}
 
 void Tools::GotoFolder(const QString& path) {
     QFileInfo info(path);

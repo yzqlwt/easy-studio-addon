@@ -6,8 +6,6 @@
 #include "utils/PlistParser.h"
 #include "utils/DirHelper.h"
 
-
-
 static Napi::Value getClipData(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
 	auto path = Tools::GetClipboardFiles();
@@ -28,10 +26,14 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
   exports.Set(Napi::String::New(env, "setCCSPath"), Napi::Function::New(env, AppConfig::setCCSPath));
   exports.Set(Napi::String::New(env, "setSkinPath"), Napi::Function::New(env, AppConfig::setSkinPath));
   exports.Set(Napi::String::New(env, "setTPPath"), Napi::Function::New(env, AppConfig::setTPPath));
+  exports.Set(Napi::String::New(env, "setSkinId"), Napi::Function::New(env, AppConfig::setSkinId));
+  exports.Set(Napi::String::New(env, "setTemplateId"), Napi::Function::New(env, AppConfig::setTemplateId));
   exports.Set(Napi::String::New(env, "getSkinFullPath"), Napi::Function::New(env, DirHelper::getSkinFullPath));
   exports.Set(Napi::String::New(env, "getAssetsFullPath"), Napi::Function::New(env, DirHelper::getAssetsFullPath));
   exports.Set(Napi::String::New(env, "getFolder"), Napi::Function::New(env, DirHelper::getFolder));
   exports.Set(Napi::String::New(env, "package"), Napi::Function::New(env, PackageHelper::package));
+  exports.Set(Napi::String::New(env, "tiny"), Napi::Function::New(env, PackageHelper::tiny));
+  exports.Set(Napi::String::New(env, "upload"), Napi::Function::New(env, PackageHelper::upload));
   return exports;
 }
 

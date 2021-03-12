@@ -1,9 +1,11 @@
 #include "Package.h"
 #include "utils/DirHelper.h"
+#include "http/RequestHelper.h"
 #include "utils/Tools.h"
 #include "http/httplib.h"
 #include "csd/FlatBuffersSerialize.h"
 #include <iostream>
+#include <fstream>
 #include <QtCore/QDateTime>
 
 
@@ -30,28 +32,22 @@ static std::vector<QString> Keys = {
 		"f3yJMWP6X3RMNr0s2cGsLTgRj9q9smhK",
 };
 
-void PackageHelper::Package() {
+void PackageHelper::Init() {
 	resources.clear();
 	auto tempPath = DirHelper::GetTempDir();
 	DirHelper::ClearDir(tempPath);
 	auto outputDir = DirHelper::GetOutputFullPath();
 	DirHelper::ClearDir(outputDir);
-	HandleImages();
+}
+
+void PackageHelper::Package() {
 	HandleCSD();
 	HandleAssets();
+	auto outputDir = DirHelper::GetOutputFullPath();
 	auto configPath = outputDir + "/ResConfig.json";
 	nlohmann::json config;
 	config["resource"] = resources;
 	Tools::WriteFile(configPath, config.dump().c_str());
-	Compress();
-	nlohmann::json json;
-	json["title"] = "Package";
-	json["status"] = "finish";
-	Emit("package", json.dump().c_str());
-	json["title"] = "Upload";
-	json["status"] = "process";
-	Emit("upload", json.dump().c_str());
-	//ÉÏ´«
 }
 
 void PackageHelper::HandleImages() {
@@ -59,28 +55,14 @@ void PackageHelper::HandleImages() {
 	auto filesInfo = DirHelper::GetFilesRecursive(DirHelper::GetSkinFullPath(), "*.png");
 	auto size = filesInfo.size();
 	nlohmann::json json;
-	json["title"] = "Package";
-	json["status"] = "wait";
-	Emit("package", json.dump().c_str());
-	json["title"] = "Upload";
-	Emit("upload", json.dump().c_str());
 	for (auto i = 0; i < size; i++)
 	{
 		auto info = filesInfo[i];
 		auto fullPath = info.absoluteFilePath();
-		json["status"] = "process";
-		json["title"] = QString("Compress:%1/%2").arg(i + 1).arg(size).toStdString();
-		json["description"] = info.fileName().toStdString();
-		Emit("tiny", json.dump().c_str());
 		auto path = Tiny(fullPath);
 		QFile::copy(path, QString("%1/%2.png").arg(tempPath, Tools::GetMd5(fullPath)));
 		resources.push_back(this->GetItemConfig(fullPath));
 	}
-	json["status"] = "finish";
-	json["title"] = QString("Compress: success").toStdString();
-	Emit("tiny", json.dump().c_str());
-	json["status"] = "process";
-	Emit("package", json.dump().c_str());
 	TexturePackage();
 }
 
@@ -125,7 +107,14 @@ void PackageHelper::HandleAssets()
 	}
 }
 
-void PackageHelper::Compress()
+void PackageHelper::Upload()
+{
+	auto path = PackageHelper::GetInstance().Compress();
+	RequestHelper::UploadFile(path, AppConfig::GetInstance().GetSkinId());
+}
+
+
+QString PackageHelper::Compress()
 {
 	auto historyDir = DirHelper::GetHistoryDir();
 	auto outputDir = DirHelper::GetOutputFullPath();
@@ -144,6 +133,7 @@ void PackageHelper::Compress()
 	QString time = dateTime.toString("yyyy-MM-dd--hh-mm-ss");
 	auto path = QString("%1/%2%3%4.zip").arg(historyDir, gameid, skinId, time);
 	JlCompress::compressDir(path, outputDir);
+	return path;
 }
 
 
@@ -195,7 +185,7 @@ nlohmann::json PackageHelper::GetItemConfig(const QString& path)
 			else {
 				auto url = json["output"]["url"].get<std::string>();
 				//ÏÂÔØ
-				return Tools::Download(url.c_str(), QString("%1/%2%3").arg(DirHelper::GetImagesCachePath(), md5, ".png"));
+				return RequestHelper::Download(url.c_str(), QString("%1/%2%3").arg(DirHelper::GetImagesCachePath(), md5, ".png"));
 			}
 		}
 	}
@@ -211,9 +201,4 @@ void PackageHelper::TexturePackage() {
 	system(cmdStr.toStdString().c_str());
 }
 
-void PackageHelper::Emit(const QString& type, const QString& content)
-{
-	this->_func->Call(
-		{ Napi::String::New(*this->_env, type.toStdString().c_str()), Napi::String::New(*this->_env, content.toStdString().c_str()) });
 
-}
