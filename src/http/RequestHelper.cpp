@@ -4,6 +4,7 @@
 #include "RequestHelper.h"
 #include "httplib.h"
 #include "../utils/Tools.h"
+#include "../AppConfig.h"
 #include <curl/curl.h>
 #include <fstream>
 #include <filesystem>
@@ -200,7 +201,9 @@ QString RequestHelper::DownloadZip(const QString &uri, const QString& zipPath) {
     return Download(url, savePath);
 }
 
-QString RequestHelper::GetResZipUri(QString &attachments) {
+QString RequestHelper::GetResZipUri() {
+    auto itemId = AppConfig::GetInstance().GetSkinId();
+    auto attachments = RequestHelper::GetAttachments(itemId, "Skin");
     auto json = nlohmann::json::parse(attachments.toStdString());
     if (json.is_array()){
         for (auto& element : json) {

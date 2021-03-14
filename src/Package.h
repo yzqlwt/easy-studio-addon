@@ -24,7 +24,7 @@ private:
 	PackageHelper() {
 		std::cout << "PackageHelper constructor called!" << std::endl;
 	}
-	std::vector<nlohmann::json> resources;
+	nlohmann::json resources;
 public:
 	void Init();
 	void Package();
@@ -33,7 +33,7 @@ public:
 	void HandleAssets();
 	void Upload();
 	QString Compress();
-	nlohmann::json GetItemConfig(const QString& path);
+	std::pair<std::string, nlohmann::json> GetItemConfig(const QString& path);
 	QString Tiny(const QString& path);
 	void TexturePackage();
 

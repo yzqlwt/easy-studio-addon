@@ -12,7 +12,7 @@ class RequestHelper {
 public:
     static QString GetAttachments(const QString& itemId, const QString& itemType);
     static QString DownloadZip(const QString& uri, const QString& savePath);
-    static QString GetResZipUri(QString& attachments);
+    static QString GetResZipUri();
     static void UploadFile(const QString &path, const QString &itemId);
     static void        AddResConfig(const QString& itemId, const QString& attachmentId);
     static void        ModifyResConfig(const QString& id, const QString& itemId, const QString& attachmentId);

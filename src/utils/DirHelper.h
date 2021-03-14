@@ -112,6 +112,16 @@ public:
 		return file;
 	}
 
+	static QString GetMangoCachePath() {
+		auto userPath = GetUserPath();
+		auto path = QString("%1/%2/%3/%4/%5/%6").arg(userPath, "AppData", "Local", "mango", "qmath-master_dev", AppConfig::GetInstance().GetSkinPath());
+		QDir dir(path);
+		if (!dir.exists()) {
+			dir.mkpath(path);
+		}
+		return path;
+	}
+
 	static QString GetFolder(const QString& path) {
 		QDir dir(path);
 		auto  list = dir.entryList(QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::NoDotAndDotDot);
@@ -144,6 +154,12 @@ public:
 		return Napi::String::New(env, path.toStdString().c_str());
 	}
 
+	static Napi::Value getOutputFullPath(const Napi::CallbackInfo& info) {
+		Napi::Env env = info.Env();
+		auto path = DirHelper::GetOutputFullPath();
+		return Napi::String::New(env, path.toStdString().c_str());
+	}
+
 
 	static Napi::Value getFolder(const Napi::CallbackInfo& info) {
 		Napi::Env env = info.Env();
@@ -155,6 +171,18 @@ public:
 		Napi::Env env = info.Env();
 		auto list = DirHelper::GetFolder(info[0].As<Napi::String>().ToString().Utf8Value().c_str());
 		return env.Null();
+	}
+
+	static Napi::Value gotoHistory(const Napi::CallbackInfo& info) {
+		auto path = DirHelper::GetHistoryDir();
+		system(QString("start %1").arg(path).toStdString().c_str());
+		return info.Env().Null();
+	}
+
+	static Napi::Value gotoMangoCache(const Napi::CallbackInfo& info) {
+		auto path = DirHelper::GetMangoCachePath();
+		system(QString("start %1").arg(path).toStdString().c_str());
+		return info.Env().Null();
 	}
 	
 };

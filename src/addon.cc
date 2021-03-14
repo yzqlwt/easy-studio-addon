@@ -3,8 +3,8 @@
 #include "Package.h"
 #include "utils/Tools.h"
 #include "http/httplib.h"
-#include "utils/PlistParser.h"
 #include "utils/DirHelper.h"
+#include "Downloader.h"
 
 static Napi::Value getClipData(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
@@ -30,10 +30,15 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
   exports.Set(Napi::String::New(env, "setTemplateId"), Napi::Function::New(env, AppConfig::setTemplateId));
   exports.Set(Napi::String::New(env, "getSkinFullPath"), Napi::Function::New(env, DirHelper::getSkinFullPath));
   exports.Set(Napi::String::New(env, "getAssetsFullPath"), Napi::Function::New(env, DirHelper::getAssetsFullPath));
+  exports.Set(Napi::String::New(env, "getOutputFullPath"), Napi::Function::New(env, DirHelper::getOutputFullPath));
   exports.Set(Napi::String::New(env, "getFolder"), Napi::Function::New(env, DirHelper::getFolder));
+  exports.Set(Napi::String::New(env, "gotoHistory"), Napi::Function::New(env, DirHelper::gotoHistory));
+  exports.Set(Napi::String::New(env, "gotoMangoCache"), Napi::Function::New(env, DirHelper::gotoMangoCache));
   exports.Set(Napi::String::New(env, "package"), Napi::Function::New(env, PackageHelper::package));
   exports.Set(Napi::String::New(env, "tiny"), Napi::Function::New(env, PackageHelper::tiny));
   exports.Set(Napi::String::New(env, "upload"), Napi::Function::New(env, PackageHelper::upload));
+  exports.Set(Napi::String::New(env, "download"), Napi::Function::New(env, Downloader::download));
+  exports.Set(Napi::String::New(env, "parse"), Napi::Function::New(env, Downloader::parse));
   return exports;
 }
 

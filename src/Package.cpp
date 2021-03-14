@@ -44,9 +44,17 @@ void PackageHelper::Package() {
 	HandleCSD();
 	HandleAssets();
 	auto outputDir = DirHelper::GetOutputFullPath();
+	auto files = DirHelper::GetFilesRecursive(outputDir, "*.plist");
 	auto configPath = outputDir + "/ResConfig.json";
 	nlohmann::json config;
 	config["resource"] = resources;
+	config["version"] = 3;
+	nlohmann::json plists;
+	for (auto file : files) {
+		QFileInfo info(file);
+		plists.push_back(info.baseName().toStdString());
+	}
+	config["plist"] = plists;
 	Tools::WriteFile(configPath, config.dump().c_str());
 }
 
@@ -61,7 +69,8 @@ void PackageHelper::HandleImages() {
 		auto fullPath = info.absoluteFilePath();
 		auto path = Tiny(fullPath);
 		QFile::copy(path, QString("%1/%2.png").arg(tempPath, Tools::GetMd5(fullPath)));
-		resources.push_back(this->GetItemConfig(fullPath));
+		auto config = this->GetItemConfig(fullPath);
+		this->resources[config.first] = config.second;
 	}
 	TexturePackage();
 }
@@ -91,7 +100,8 @@ void PackageHelper::HandleCSD()
 		auto outputDir = DirHelper::GetOutputFullPath();
 		auto csbPath = outputDir + "/" + info.baseName() + ".csb";
 		FlatBuffersSerialize::getInstance()->serializeFlatBuffersWithXML(content.toStdString(), csbPath.toStdString());
-		resources.push_back(this->GetItemConfig(csbPath));
+		auto config = this->GetItemConfig(csbPath);
+		this->resources[config.first] = config.second;
 	}
 }
 
@@ -102,8 +112,13 @@ void PackageHelper::HandleAssets()
 	auto filesInfo = DirHelper::GetFilesRecursive(DirHelper::GetAssetsFullPath());
 	for (auto file : filesInfo) {
 		auto fullPath = file.absoluteFilePath();
-		resources.push_back(this->GetItemConfig(fullPath));
-		QFile::copy(fullPath, QString("%1/%2").arg(outputDir, file.fileName()));
+		auto config = this->GetItemConfig(fullPath);
+		this->resources[config.first] = config.second;
+		auto targetPath = QString("%1/%2").arg(outputDir, file.fileName());
+		if (QFile(targetPath).exists()) {
+			QFile::remove(targetPath);
+		}
+		QFile::copy(fullPath, targetPath);
 	}
 }
 
@@ -137,20 +152,28 @@ QString PackageHelper::Compress()
 }
 
 
-nlohmann::json PackageHelper::GetItemConfig(const QString& path)
+std::pair<std::string, nlohmann::json> PackageHelper::GetItemConfig(const QString& path)
 {
 	nlohmann::json config;
 	QFileInfo info(path);
-	auto skinFullPath = DirHelper::GetSkinFullPath();
-	auto index = path.indexOf(skinFullPath);
 	auto extension = "."+info.suffix();
-	auto name = QString(path).replace(QString((skinFullPath+"/").toStdString().c_str()), QString(""));
+	auto name = QString("");
 	if (extension == ".png") {
 		config["Md5"] = Tools::GetMd5(path).toStdString();
+		auto skinFullPath = DirHelper::GetSkinFullPath();
+		name = QString(path).replace(QString((skinFullPath + "/").toStdString().c_str()), QString(""));
+	}
+	else if (extension == ".csb") {
+		auto outputFullPath = DirHelper::GetOutputFullPath();
+		name = QString(path).replace(QString((outputFullPath + "/").toStdString().c_str()), QString(""));
+	}
+	else {
+		auto assetsFullPath = DirHelper::GetAssetsFullPath();
+		name = QString(path).replace(QString((assetsFullPath + "/").toStdString().c_str()), QString(""));;
 	}
 	config["Extension"] = extension.toStdString();
 	config["Name"] = name.toStdString();
-	return config;
+	return std::make_pair(name.toStdString(), config);
 }
 
  QString PackageHelper::Tiny(const QString& path) {

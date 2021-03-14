@@ -19,7 +19,6 @@ public:
     static void WriteFile(const QString& path, const QString& content);
     static QStringList GetAllMatchResults(const QString& text, const QString& regexp);
     static QString GetPlistName(const QString& md5);
-    static QString Download(const QString& uri, const QString& path);
     static QString GetClipboardFiles();
     static void GotoFolder(const QString& path);
 };
