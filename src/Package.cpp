@@ -91,7 +91,7 @@ void PackageHelper::HandleCSD()
 			if (info.isFile())
 			{
 				auto md5 = Tools::GetMd5(info.absoluteFilePath());
-				auto newPath = QString("Type=\"PlistSubImage\" Path=\"%1\" Plist=\"%2\"").arg(md5 + ".png").arg(Tools::GetPlistName(md5));
+				auto newPath = QString("Type=\"PlistSubImage\" Path=\"%1\" Plist=\"%3%2.plist\"").arg(md5 + ".png").arg(Tools::GetPlistName(md5)).arg(AppConfig::GetInstance().GetSkinPath());
 				content.replace(result, newPath);
 			}
 		}
@@ -161,15 +161,17 @@ std::pair<std::string, nlohmann::json> PackageHelper::GetItemConfig(const QStrin
 	if (extension == ".png") {
 		config["Md5"] = Tools::GetMd5(path).toStdString();
 		auto skinFullPath = DirHelper::GetSkinFullPath();
-		name = QString(path).replace(QString((skinFullPath + "/").toStdString().c_str()), QString(""));
+		auto assetsFullPath = DirHelper::GetAssetsFullPath();
+		name = QString(path).replace(assetsFullPath, "");
+		name = QString(name).replace(skinFullPath, "");
 	}
 	else if (extension == ".csb") {
 		auto outputFullPath = DirHelper::GetOutputFullPath();
-		name = QString(path).replace(QString((outputFullPath + "/").toStdString().c_str()), QString(""));
+		name = info.fileName();
 	}
 	else {
 		auto assetsFullPath = DirHelper::GetAssetsFullPath();
-		name = QString(path).replace(QString((assetsFullPath + "/").toStdString().c_str()), QString(""));;
+		name = QString(path).replace(assetsFullPath, "");
 	}
 	config["Extension"] = extension.toStdString();
 	config["Name"] = name.toStdString();
@@ -202,12 +204,12 @@ std::pair<std::string, nlohmann::json> PackageHelper::GetItemConfig(const QStrin
 			auto json = nlohmann::json::parse(res->body);
 			if (res->body.find("error") != std::string::npos) {
 				//tiny png error retry!
-				//qDebug() << "Ñ¹Ëõ´íÎó£º" << res->body;
+				//qDebug() << "Ñ¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½" << res->body;
 				return Tiny(path);
 			}
 			else {
 				auto url = json["output"]["url"].get<std::string>();
-				//ÏÂÔØ
+				//ï¿½ï¿½ï¿½ï¿½
 				return RequestHelper::Download(url.c_str(), QString("%1/%2%3").arg(DirHelper::GetImagesCachePath(), md5, ".png"));
 			}
 		}

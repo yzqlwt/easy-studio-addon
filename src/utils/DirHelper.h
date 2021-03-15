@@ -80,6 +80,7 @@ public:
 		if (!dir.exists()) {
 			dir.mkpath(path);
 		}
+		path.replace("\\","/"); 
 		return path;
 	}
 
@@ -91,6 +92,7 @@ public:
 		if (!dir.exists()) {
 			dir.mkpath(path);
 		}
+		path.replace("\\","/");
 		return path;
 	}
 
@@ -102,6 +104,7 @@ public:
 		if (!dir.exists()) {
 			dir.mkpath(path);
 		}
+		path.replace("\\","/");
 		return path;
 	}
 
