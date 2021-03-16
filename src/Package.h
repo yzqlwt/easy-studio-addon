@@ -33,6 +33,7 @@ public:
 	void HandleAssets();
 	void Upload();
 	QString Compress();
+	QString GetNeedTinyFiles();
 	std::pair<std::string, nlohmann::json> GetItemConfig(const QString& path);
 	QString Tiny(const QString& path);
 	void TexturePackage();
@@ -43,17 +44,16 @@ public:
 		return env.Null();
 	}
 
-	static Napi::Value tiny(const Napi::CallbackInfo& info) {
-		Napi::Env env = info.Env();
-		PackageHelper::GetInstance().Init();
-		PackageHelper::GetInstance().HandleImages();
-		return env.Null();
-	}
-
 	static Napi::Value upload(const Napi::CallbackInfo& info) {
 		Napi::Env env = info.Env();
 		PackageHelper::GetInstance().Upload();
 		return env.Null();
+	}
+
+	static Napi::Value getNeedTinyFiles(const Napi::CallbackInfo& info) {
+		Napi::Env env = info.Env();
+		auto path = PackageHelper::GetInstance().GetNeedTinyFiles();
+		return Napi::String::New(env, path.toStdString().c_str());
 	}
 
 };

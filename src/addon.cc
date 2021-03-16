@@ -35,8 +35,8 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
   exports.Set(Napi::String::New(env, "gotoHistory"), Napi::Function::New(env, DirHelper::gotoHistory));
   exports.Set(Napi::String::New(env, "gotoMangoCache"), Napi::Function::New(env, DirHelper::gotoMangoCache));
   exports.Set(Napi::String::New(env, "package"), Napi::Function::New(env, PackageHelper::package));
-  exports.Set(Napi::String::New(env, "tiny"), Napi::Function::New(env, PackageHelper::tiny));
   exports.Set(Napi::String::New(env, "upload"), Napi::Function::New(env, PackageHelper::upload));
+  exports.Set(Napi::String::New(env, "getNeedTinyFiles"), Napi::Function::New(env, PackageHelper::getNeedTinyFiles));
   exports.Set(Napi::String::New(env, "download"), Napi::Function::New(env, Downloader::download));
   exports.Set(Napi::String::New(env, "parse"), Napi::Function::New(env, Downloader::parse));
   return exports;

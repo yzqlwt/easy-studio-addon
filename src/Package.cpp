@@ -41,6 +41,8 @@ void PackageHelper::Init() {
 }
 
 void PackageHelper::Package() {
+	Init();
+	HandleImages();
 	HandleCSD();
 	HandleAssets();
 	auto outputDir = DirHelper::GetOutputFullPath();
@@ -67,8 +69,16 @@ void PackageHelper::HandleImages() {
 	{
 		auto info = filesInfo[i];
 		auto fullPath = info.absoluteFilePath();
+		auto md5 = Tools::GetMd5(fullPath);
 		auto path = Tiny(fullPath);
-		QFile::copy(path, QString("%1/%2.png").arg(tempPath, Tools::GetMd5(fullPath)));
+		QFileInfo tinyinfo(QString("%1/%2%3").arg(DirHelper::GetImagesCachePath(), md5, ".png"));
+		if (!tinyinfo.isFile()) {
+			std::cout << "file not found in cache:" << tinyinfo.fileName().toStdString() << std::endl;
+			QFile::copy(fullPath, QString("%1/%2.png").arg(tempPath, md5));
+		}
+		else {
+			QFile::copy(path, QString("%1/%2.png").arg(tempPath, md5));
+		}
 		auto config = this->GetItemConfig(fullPath);
 		this->resources[config.first] = config.second;
 	}
@@ -151,6 +161,25 @@ QString PackageHelper::Compress()
 	return path;
 }
 
+QString PackageHelper::GetNeedTinyFiles()
+{
+	auto tempPath = DirHelper::GetTempDir();
+	auto filesInfo = DirHelper::GetFilesRecursive(DirHelper::GetSkinFullPath(), "*.png");
+	auto size = filesInfo.size();
+	QStringList list;
+	for (auto i = 0; i < size; i++)
+	{
+		auto info = filesInfo[i];
+		auto fullPath = info.absoluteFilePath();
+		auto md5 = Tools::GetMd5(fullPath);
+		QFileInfo tinyinfo(QString("%1/%2%3").arg(DirHelper::GetImagesCachePath(), md5, ".png"));
+		if (!tinyinfo.isFile()) {
+			list.push_back(fullPath);
+		}
+	}
+	return list.join(",");
+}
+
 
 std::pair<std::string, nlohmann::json> PackageHelper::GetItemConfig(const QString& path)
 {
@@ -178,6 +207,7 @@ std::pair<std::string, nlohmann::json> PackageHelper::GetItemConfig(const QStrin
 	return std::make_pair(name.toStdString(), config);
 }
 
+//改为node请求
  QString PackageHelper::Tiny(const QString& path) {
 	 auto md5 = Tools::GetMd5(path);
 	QFileInfo info(QString("%1/%2%3").arg(DirHelper::GetImagesCachePath(), md5, ".png"));
