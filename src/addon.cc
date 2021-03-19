@@ -5,6 +5,7 @@
 #include "http/httplib.h"
 #include "utils/DirHelper.h"
 #include "Downloader.h"
+#include "FlaExtension.h"
 
 static Napi::Value getClipData(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
@@ -39,6 +40,7 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
   exports.Set(Napi::String::New(env, "getNeedTinyFiles"), Napi::Function::New(env, PackageHelper::getNeedTinyFiles));
   exports.Set(Napi::String::New(env, "download"), Napi::Function::New(env, Downloader::download));
   exports.Set(Napi::String::New(env, "parse"), Napi::Function::New(env, Downloader::parse));
+  exports.Set(Napi::String::New(env, "generateCSD"), Napi::Function::New(env, FlaExtension::generateCSD));
   return exports;
 }
 
