@@ -6,7 +6,9 @@
 #include "csd/FlatBuffersSerialize.h"
 #include <iostream>
 #include <fstream>
+#include <opencv2/opencv.hpp>
 #include <QtCore/QDateTime>
+#include <QtCore/QProcess>
 
 
 static std::vector<QString> Keys = {
@@ -40,9 +42,13 @@ void PackageHelper::Init() {
 	DirHelper::ClearDir(outputDir);
 }
 
-void PackageHelper::Package() {
+QString PackageHelper::Package() {
 	Init();
 	HandleImages();
+	auto error = TexturePackage();
+	if (error != "") {
+		return error;
+	}
 	HandleCSD();
 	HandleAssets();
 	auto outputDir = DirHelper::GetOutputFullPath();
@@ -58,6 +64,7 @@ void PackageHelper::Package() {
 	}
 	config["plist"] = plists;
 	Tools::WriteFile(configPath, config.dump().c_str());
+	return "success";
 }
 
 void PackageHelper::HandleImages() {
@@ -82,7 +89,6 @@ void PackageHelper::HandleImages() {
 		auto config = this->GetItemConfig(fullPath);
 		this->resources[config.first] = config.second;
 	}
-	TexturePackage();
 }
 
 void PackageHelper::HandleCSD()
@@ -176,6 +182,14 @@ QString PackageHelper::GetNeedTinyFiles()
 		if (!tinyinfo.isFile()) {
 			list.push_back(fullPath);
 		}
+		else {
+			auto fileFullPath = tinyinfo.absoluteFilePath();
+			cv::Mat img = cv::imread(tinyinfo.absoluteFilePath().toStdString());
+			if (img.empty() || !img.data) {
+				list.push_back(fullPath);
+				QFile::remove(fileFullPath);
+			}
+		}
 	}
 	return list.join(",");
 }
@@ -247,13 +261,42 @@ std::pair<std::string, nlohmann::json> PackageHelper::GetItemConfig(const QStrin
 	return "";
 }
 
-void PackageHelper::TexturePackage() {
+QString PackageHelper::TexturePackage() {
+	//auto outputDir = DirHelper::GetOutputFullPath();
+	//auto tempDir = DirHelper::GetTempDir();
+	//auto appPath = AppConfig::GetInstance().GetTPPath();
+	//auto cmdStr = QString("%1 %2 --sheet %3/__frame_{n1}.png --data %3/__frame_{n1}.plist --allow-free-size --no-trim --max-size 2048 --format cocos2d --multipack --extrude 2").arg(appPath, tempDir, outputDir);
+	//qDebug() << cmdStr;
+	//system(cmdStr.toStdString().c_str());
+
 	auto outputDir = DirHelper::GetOutputFullPath();
 	auto tempDir = DirHelper::GetTempDir();
 	auto appPath = AppConfig::GetInstance().GetTPPath();
-	auto cmdStr = QString("%1 %2 --sheet %3/__frame_{n1}.png --data %3/__frame_{n1}.plist --allow-free-size --no-trim --max-size 2048 --format cocos2d --multipack --extrude 2").arg(appPath, tempDir, outputDir);
-	qDebug() << cmdStr;
-	system(cmdStr.toStdString().c_str());
+	auto args2 = QString(" %1 --sheet %2/__frame_{n1}.png --data %2/__frame_{n1}.plist --allow-free-size --no-trim --max-size 2048 --format cocos2d --multipack --extrude 2").arg(tempDir, outputDir);
+	QStringList args;
+	args.append(tempDir);
+	args.append("--sheet");
+	args.append(outputDir+"/__frame_{n1}.png");
+	args.append("--data");
+	args.append(outputDir + "/__frame_{n1}.plist");
+	args.append("--allow-free-size");
+	args.append("--no-trim");
+	args.append("--max-size");
+	args.append("2048");
+	args.append("--format");
+	args.append("cocos2d");
+	args.append("--multipack");
+	args.append("--extrude");
+	args.append("2");
+	QProcess p(0);
+	qDebug() << args;
+	p.start(appPath, args);
+	p.waitForFinished();//等待完成
+	auto error = QString::fromLocal8Bit(p.readAllStandardError());
+	auto output = QString::fromLocal8Bit(p.readAllStandardOutput());
+	qDebug() << "TexturePackager Error:"<< error;
+	qDebug() << "TexturePackager Log:" << output;
+	return error;
 }
 
 

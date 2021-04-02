@@ -1,17 +1,17 @@
 var addon = require('bindings')('addon.node')
 
-addon.setSkinPath("res\\ui\\games\\game411\\skin01\\")
+addon.setSkinPath("res\\ui\\games\\game432\\skin01\\")
 addon.setTPPath("C:\\Users\\yzqlwt\\Documents\\easy-studio4\\assets\\Release\\assets\\TexturePacker.exe")
 
 addon.setCCSPath("C:\\Users\\yzqlwt\\Documents\\WorkSpace\\cocos-ui\\mangomath-ui\\CocosProject.ccs")
-addon.setSkinId(1921)
+addon.setSkinId(1997)
 
 // // addon.gotoFolder("C:/Users/yzqlwt/Documents/WorkSpace/cocos-ui/mangomath-ui/cocosstudio/res/ui/games/game411/skin01/")
 
 // addon.tiny()
-// console.log("tiny", addon.getNeedTinyFiles())
-addon.generateCSD()
-// addon.package()
+console.log("tiny", addon.getNeedTinyFiles())
+// addon.generateCSD()
+// console.log(addon.package())
 // console.log("package")
 // addon.upload()
 // console.log("upload")

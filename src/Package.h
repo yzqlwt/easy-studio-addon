@@ -27,7 +27,7 @@ private:
 	nlohmann::json resources;
 public:
 	void Init();
-	void Package();
+	QString Package();
 	void HandleImages();
 	void HandleCSD();
 	void HandleAssets();
@@ -36,12 +36,12 @@ public:
 	QString GetNeedTinyFiles();
 	std::pair<std::string, nlohmann::json> GetItemConfig(const QString& path);
 	QString Tiny(const QString& path);
-	void TexturePackage();
+	QString TexturePackage();
 
 	static Napi::Value package(const Napi::CallbackInfo& info) {
 		Napi::Env env = info.Env();
-		PackageHelper::GetInstance().Package();
-		return env.Null();
+		auto result = PackageHelper::GetInstance().Package();
+		return Napi::String::New(env, result.toStdString().c_str());
 	}
 
 	static Napi::Value upload(const Napi::CallbackInfo& info) {
