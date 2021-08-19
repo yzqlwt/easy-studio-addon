@@ -15,6 +15,9 @@
 #include "reader/TextReader.h"
 #include "reader/ButtonReader.h"
 #include "reader/SpriteReader.h"
+#include "reader/LoadingBarReader.h"
+#include "reader/ListViewReader.h"
+#include "reader/ScrollViewReader.h"
 #include <new>
 #include <string>
 #include <fstream>
@@ -141,7 +144,7 @@ std::string FlatBuffersSerialize::serializeFlatBuffersWithXML(const std::string 
                 }
                 if (rootType == "GameNodeObjectData" || rootType == "GameLayerObjectData")  // for adaptate old version
                     rootType = "NodeObjectData";
-
+                
                 nodeTree = createNodeTree(objectData, rootType);
             }
             else if (name == "AnimationList") // animation list
@@ -214,6 +217,7 @@ FlatBuffersSerialize::createNodeTree(const tinyxml2::XMLElement *objectData, std
     else
     {
         std::string readername = getGUIClassName(classname);
+        std::cout << "readername \t" << readername << std::endl;
         readername.append("Reader");
         NodeReaderProtocol* reader = dynamic_cast<NodeReaderProtocol*>(ObjectFactory::getInstance()->createObject(readername));
         if (reader != nullptr)
@@ -354,10 +358,10 @@ FlatBuffersSerialize::FlatBuffersSerialize() {
     CREATE_CLASS_NODE_READER_INFO(TextReader);
 //    CREATE_CLASS_NODE_READER_INFO(TextFieldReader);
 //    CREATE_CLASS_NODE_READER_INFO(TextAtlasReader);
-//    CREATE_CLASS_NODE_READER_INFO(LoadingBarReader);
+    CREATE_CLASS_NODE_READER_INFO(LoadingBarReader);
 //    CREATE_CLASS_NODE_READER_INFO(SliderReader);
     CREATE_CLASS_NODE_READER_INFO(LayoutReader);
-//    CREATE_CLASS_NODE_READER_INFO(ScrollViewReader);
+    CREATE_CLASS_NODE_READER_INFO(ScrollViewReader);
 //    CREATE_CLASS_NODE_READER_INFO(PageViewReader);
-//    CREATE_CLASS_NODE_READER_INFO(ListViewReader);
+    CREATE_CLASS_NODE_READER_INFO(ListViewReader);
 }

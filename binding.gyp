@@ -12,6 +12,22 @@
                 "<!@(node -p \"require('fs').readdirSync('./src/csd/flatbuffers').map(f=>'src/csd/flatbuffers/'+f).join(' ')\")",
                 "<!@(node -p \"require('fs').readdirSync('./src/csd/reader').map(f=>'src/csd/reader/'+f).join(' ')\")",
             ],
+            'configurations': {
+                'Debug': {
+                    'msvs_settings': {
+                        'VCCLCompilerTool': {
+                            'AdditionalOptions': ['/EHsc'] # 启用c++异常
+                        },
+                    },
+                },
+                'Release': {
+                    'msvs_settings': {
+                        'VCCLCompilerTool': {
+                            'AdditionalOptions': ['/EHsc']  # 启用c++异常
+                        },
+                    },
+                },
+            },
             "include_dirs": [
                 "<!@(node -p \"require('node-addon-api').include\")"
             ],

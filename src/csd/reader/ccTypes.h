@@ -5,6 +5,8 @@
 #ifndef TESTCSD_CCTYPES_H
 #define TESTCSD_CCTYPES_H
 
+#define FLATSTR_TO_BOOL(str) (str.compare("True") == 0) ? true : false
+
 class Vec2 {
 public:
     float x;

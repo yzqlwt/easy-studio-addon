@@ -32,6 +32,16 @@ public:
 		return path;
 	}
 
+	static QString GetDownloadPath() {
+		auto userPath = GetUserPath();
+		auto path = QString("%1/%2/%3/%4/%5").arg(userPath, "AppData", "Local", "EasyStudio", "download");
+		QDir dir(path);
+		if (!dir.exists()) {
+			dir.mkpath(path);
+		}
+		return path;
+	}
+
 	static QString GetTokenPath() {
 		auto cachePath = GetCachePath();
 		auto path = QString("%1/%2").arg(cachePath, "token.json");

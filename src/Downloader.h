@@ -24,6 +24,7 @@ private:
 	Downloader() {
 		std::cout << "Downloader constructor called!" << std::endl;
 	}
+	void OldVersionParse();
 
 public:
 	QString Download();

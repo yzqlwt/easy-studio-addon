@@ -64,6 +64,18 @@ void FlaExtension::ReadConfig() {
 void FlaExtension::Write(QString dir_path){
 	QFileInfo info(this->path);
 	auto csd_path = dir_path + "/" + info.fileName() + ".csd";
+	std::vector<std::map<std::string, std::string>> finalSymbols;
+     for(auto it= symbols.begin();it!= symbols.end();)
+     {
+		 auto item = *it;
+		 if (item.find("parent") != item.end()) {
+			 finalSymbols.push_back(item);
+			 it = symbols.erase(it);
+		 }
+         else
+            ++it;
+     }
+	 symbols.insert(symbols.end(), finalSymbols.begin(), finalSymbols.end());
 	for (auto item : symbols) {
 		auto name = item["name"];
 		auto image = item["image"];
@@ -71,6 +83,33 @@ void FlaExtension::Write(QString dir_path){
 		auto x = item["x"];
 		auto y = item["y"];
 		auto file_path = this->path + "/" + image.c_str();
+		auto hasParent = item.find("parent") != item.end();
+		tinyxml2::XMLElement* parent = this->Children;
+		if (hasParent)
+		{
+			auto parentName = item["parent"];
+			parent = this->queryNodeByName(this->Children, parentName.c_str());
+			if (parent == NULL) {
+				parent = (tinyxml2::XMLElement*)deepCopy(this->Node, &document);
+				parent->SetAttribute("Name", parentName.c_str());
+				tinyxml2::XMLElement* Position = parent->FirstChildElement("Position");
+				Position->SetAttribute("X", 0);
+				Position->SetAttribute("Y", 0);
+				Children->LinkEndChild(parent);
+				auto childrenNode = document.NewElement("Children");
+				parent->LinkEndChild(childrenNode);
+				parent = childrenNode;
+			}
+			else {
+				auto childrenNode = parent->FirstChildElement("Children");
+				if (childrenNode == NULL)
+				{
+					childrenNode = document.NewElement("Children");
+					parent->LinkEndChild(childrenNode);
+				}
+				parent = childrenNode;
+			}
+		}
 		if (type.compare("ImageView") == 0) {
 			tinyxml2::XMLElement* imageview = (tinyxml2::XMLElement*)deepCopy(this->ImageView, &document);
 			imageview->SetAttribute("Name", name.c_str());
@@ -80,10 +119,19 @@ void FlaExtension::Write(QString dir_path){
 			Position->SetAttribute("X", x.c_str());
 			Position->SetAttribute("Y", y.c_str());
 			tinyxml2::XMLElement* Size = imageview->FirstChildElement("Size");
-			cv::Mat mat = cv::imread((dir_path + "/" + image.c_str()).toStdString(), cv::IMREAD_UNCHANGED);
+			cv::Mat mat = cv::imread((dir_path + "/" + image.c_str()).toLocal8Bit().toStdString(), cv::IMREAD_UNCHANGED);
 			Size->SetAttribute("X", mat.cols);
 			Size->SetAttribute("Y", mat.rows);
-			Children->LinkEndChild(imageview);
+			if (parent != this->Children)
+			{
+				tinyxml2::XMLElement* parentNode = parent->Parent()->ToElement();
+				tinyxml2::XMLElement* ParentPosition = parentNode->FirstChildElement("Position");
+				auto parentX = ParentPosition->Attribute("X");
+				auto parentY = ParentPosition->Attribute("Y");
+				Position->SetAttribute("X", std::stoi(x) - std::stoi(parentX));
+				Position->SetAttribute("Y", std::stoi(y) - std::stoi(parentY));
+			}
+			parent->LinkEndChild(imageview);
 		}
 		else if (type.compare("Node") == 0) {
 			tinyxml2::XMLElement* node = (tinyxml2::XMLElement*)deepCopy(this->Node, &document);
@@ -91,7 +139,7 @@ void FlaExtension::Write(QString dir_path){
 			tinyxml2::XMLElement* Position = node->FirstChildElement("Position");
 			Position->SetAttribute("X", x.c_str());
 			Position->SetAttribute("Y", y.c_str());
-			Children->LinkEndChild(node);
+			parent->LinkEndChild(node);
 		}
 		else if (type.compare("Button") == 0) {
 			tinyxml2::XMLElement* button = (tinyxml2::XMLElement*)deepCopy(this->Button, &document);
@@ -101,11 +149,11 @@ void FlaExtension::Write(QString dir_path){
 			tinyxml2::XMLElement* Position = button->FirstChildElement("Position");
 			Position->SetAttribute("X", x.c_str());
 			Position->SetAttribute("Y", y.c_str());
-			cv::Mat mat = cv::imread((dir_path + "/" + image.c_str()).toStdString(), cv::IMREAD_UNCHANGED);
+			cv::Mat mat = cv::imread((dir_path + "/" + image.c_str()).toLocal8Bit().toStdString(), cv::IMREAD_UNCHANGED);
 			tinyxml2::XMLElement* Size = button->FirstChildElement("Size");
 			Size->SetAttribute("X", mat.cols);
 			Size->SetAttribute("Y", mat.rows);
-			Children->LinkEndChild(button);
+			parent->LinkEndChild(button);
 		}
 	}
 	Children->DeleteChild(this->ImageView);
